@@ -10,5 +10,9 @@ def incomeTax(taxable_income, tax_bracket):
 			break
 	return tax_burden
 
+def ficaTax(total_income, year)
+
+	if total_income < 
+
 def effectiveTaxRate(taxable_income, tax_burden):
 	return (tax_burden / taxable_income) * 100.0
