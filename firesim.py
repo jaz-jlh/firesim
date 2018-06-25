@@ -46,15 +46,37 @@ def calculate401k(current_value, age):
 	else: 
 		return current_value
 
+def calculateTakeHome(work_income, deduction_insurances, contribution_401k, \
+	contribution_hsa, total_tax):
+	# TODO ignoring inflation
+	return work_income - deduction_insurances - contribution_401k - \
+		contribution_hsa - total_tax
 
 
-print('Year Age Income Taxable 401k')
+
+print('Year Age Income 401k Taxable TotalTax TakeHome')
 
 for year in range(start_year, end_year):
+	# Time values
 	age = start_age + year - start_year
+	# Income
 	work_income = calculateWorkIncome(age, year)
-	taxable_income = calculateTaxableIncome(age, work_income, year)
+	# returns from investments
+	# Pre-tax contributions
 	account_retirement_401k = calculate401k(account_retirement_401k, age)
+	# hsa
+	# Taxes
+	taxable_income = calculateTaxableIncome(age, work_income, year)
+	fica_tax = tax.ficaTax(work_income, year)
+	federal_income_tax = tax.federalIncomeTax(taxable_income, tax_bracket_2018)
+	state_income_tax = tax.stateIncomeTax(work_income)
+	local_income_tax = tax.localIncomeTax(work_income)
+	total_tax = fica_tax + federal_income_tax + state_income_tax + local_income_tax
+	# Now I get paid
+	take_home = calculateTakeHome(work_income, deduction_insurances, \
+		contribution_401k, contribution_hsa, total_tax)
 
-	print("%5d %5d %8.f %8.f %8.f" % 
-		(year, age, work_income, taxable_income, account_retirement_401k))
+	# 
+
+	print("%5d %5d %8.f %8.f %8.f %8.f %8.f" % 
+		(year, age, work_income, account_retirement_401k, taxable_income, total_tax, take_home))
