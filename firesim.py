@@ -74,6 +74,7 @@ for year in range(start_year, end_year):
 	# post-work
 	else:
 		work_income = 0
+		# Retirement account distributions are not subject to the FICA tax - https://finance.zacks.com/ira-withdrawals-subject-fica-5179.html
 
 
 	# TODO make this less repetitive because they are subsets
