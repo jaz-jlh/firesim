@@ -3,7 +3,7 @@
 import tax
 from params import *
 
-print_level = 'accounts'
+print_level = 'debug'
 
 # initialize account values
 
@@ -34,32 +34,39 @@ def calculateTakeHome(work_income, deduction_insurances, contribution_401k, \
 	return work_income - deduction_insurances - contribution_401k - \
 		contribution_hsa - total_tax
 
-
+print('Year Age ', end='')
 if print_level == 'debug':
-	print('Year Age WorkIncome 401k Taxable TotalTax TakeHome')
-elif print_level == 'intermediates':
-	print('not implemented yet')
-elif print_level == 'accounts':
-	print('Year Age Roth HSA Savings 401k Taxable')
+	print('WorkIncome Taxable TotalTax TakeHome LivingExp Saveable', end='')
+# elif print_level == 'intermediates':
+# 	print('not implemented yet')
+print(' Roth HSA Savings 401k Taxable')
 
 for year in range(start_year, end_year):
 	# Time values
 	age = start_age + year - start_year
 
-	# TODO calculate the things that are the same each year
-	account_retirement_401k = account_retirement_401k * (1 + growth_rate_retirement_401k)
+	# Growth rates happen regardless
+	account_retirement_401k 	*= (1 + growth_rate_retirement_401k)
+	account_retirement_taxable 	*= (1 + growth_rate_retirement_taxable)
+	account_roth 				*= (1 + growth_rate_roth)
+	account_hsa 				*= (1 + growth_rate_hsa)
+	account_savings 			*= (1 + growth_rate_savings)
 
-
-	# then calculate the things that are different depending on fire
+	living_expenses = inflation(initial_value_living_expenses, year)
 
 	# the work regime
 	if age < fire_age:
 		# Income from working, adjusted for inflation
 		work_income = inflation(initial_value_work_income, year)
 		# returns from investments
+		#
+
+		# TODO 
 		# Pre-tax contributions
-		account_retirement_401k = account_retirement_401k + contribution_401k
+		account_retirement_401k = account_retirement_401k + contribution_401k # add inflation
 		# hsa
+		account_hsa = account_hsa + contribution_hsa # add inflation
+
 		# Taxes
 		taxable_income = calculateTaxableIncome(age, work_income, year)
 		fica_tax = tax.ficaTax(work_income, year)
@@ -70,20 +77,29 @@ for year in range(start_year, end_year):
 		# Now I get paid
 		take_home = calculateTakeHome(work_income, deduction_insurances, \
 			contribution_401k, contribution_hsa, total_tax)
+		# living expenses calculated above		
+		saveable = take_home - living_expenses
 
-	# post-work
+		# Contributions
+		account_savings += inflation(contribution_savings, year)
+
+
+
+
+	# post-work regime
 	else:
 		work_income = 0
 		# Retirement account distributions are not subject to the FICA tax - https://finance.zacks.com/ira-withdrawals-subject-fica-5179.html
 
 
 	# TODO make this less repetitive because they are subsets
+	print("%5d %5d" % (year, age), end='')
 	if print_level == 'debug':
-		print("%5d %5d %8.f %8.f %8.f %8.f %8.f" % 
-			(year, age, work_income, account_retirement_401k, taxable_income, total_tax, take_home))
-	elif print_level == 'intermediates':
-		print('not implemented yet')
-	elif print_level == 'accounts':
-		print("%5d %5d %8.f %8.f %8.f %8.f %8.f" % 
-			(year, age, account_roth, account_hsa, account_savings, \
-				account_retirement_401k, account_retirement_taxable))
+		print("%8.f %8.f %8.f %8.f %8.f %8.f" % 
+			(work_income, taxable_income, total_tax, 
+				take_home, living_expenses, saveable), end='')
+	# elif print_level == 'intermediates':
+	# 	print('not implemented yet')
+	print("%8.f %8.f %8.f %8.f %8.f" % 
+		(account_roth, account_hsa, account_savings, \
+			account_retirement_401k, account_retirement_taxable))
