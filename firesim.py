@@ -36,10 +36,10 @@ def calculateTakeHome(work_income, deduction_insurances, contribution_401k, \
 
 print('Year Age ', end='')
 if print_level == 'debug':
-	print('WorkIncome Taxable TotalTax TakeHome LivingExp Saveable', end='')
+	print('WorkIncome Taxable TotalTax TakeHome LivingExp Saveable TaxableCont 401kAT', end='')
 # elif print_level == 'intermediates':
 # 	print('not implemented yet')
-print(' Roth HSA Savings 401k Taxable')
+print(' Savings Roth HSA 401k Taxable')
 
 for year in range(start_year, end_year):
 	# Time values
@@ -61,10 +61,8 @@ for year in range(start_year, end_year):
 		# returns from investments
 		#
 
-		# TODO 
 		# Pre-tax contributions
 		account_retirement_401k = account_retirement_401k + contribution_401k # add inflation
-		# hsa
 		account_hsa = account_hsa + contribution_hsa # add inflation
 
 		# Taxes
@@ -74,14 +72,25 @@ for year in range(start_year, end_year):
 		state_income_tax = tax.stateIncomeTax(work_income)
 		local_income_tax = tax.localIncomeTax(work_income)
 		total_tax = fica_tax + federal_income_tax + state_income_tax + local_income_tax
+		
 		# Now I get paid
 		take_home = calculateTakeHome(work_income, deduction_insurances, \
 			contribution_401k, contribution_hsa, total_tax)
 		# living expenses calculated above		
 		saveable = take_home - living_expenses
 
-		# Contributions
-		account_savings += inflation(contribution_savings, year)
+		# Post-tax contributions
+		current_contribution_savings = inflation(contribution_savings, year)
+		account_savings += current_contribution_savings
+		account_roth += contribution_roth
+		current_contribution_taxable = inflation(contribution_taxable, year)
+		account_retirement_taxable += current_contribution_taxable
+		# take whatever is leftover, make sure it's possible
+		remainder = saveable - current_contribution_savings - current_contribution_taxable - contribution_roth
+		if remainder < 0:
+			print('Error! no remainder for 401k post-tax')
+			quit()
+		account_retirement_401k += remainder
 
 
 
@@ -95,11 +104,11 @@ for year in range(start_year, end_year):
 	# TODO make this less repetitive because they are subsets
 	print("%5d %5d" % (year, age), end='')
 	if print_level == 'debug':
-		print("%8.f %8.f %8.f %8.f %8.f %8.f" % 
+		print("%8.f %8.f %8.f %8.f %8.f %8.f %8.f %8.f" % 
 			(work_income, taxable_income, total_tax, 
-				take_home, living_expenses, saveable), end='')
+				take_home, living_expenses, saveable, current_contribution_taxable, remainder), end='')
 	# elif print_level == 'intermediates':
 	# 	print('not implemented yet')
 	print("%8.f %8.f %8.f %8.f %8.f" % 
-		(account_roth, account_hsa, account_savings, \
+		(account_savings, account_roth, account_hsa, \
 			account_retirement_401k, account_retirement_taxable))
