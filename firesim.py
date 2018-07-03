@@ -36,7 +36,7 @@ def calculateTakeHome(work_income, deduction_insurances, contribution_401k, \
 
 print('Year Age ', end='')
 if print_level == 'debug':
-	print('WorkIncome Taxable CGTax TotalTax TakeHome LvngExp Saveable TxblCont 401kAT', end='')
+	print('WorkIncome Taxable CG TotalTax TakeHome LvngExp Saveable TxblCont 401kAT', end='')
 # elif print_level == 'intermediates':
 # 	print('not implemented yet')
 print(' Savings Roth HSA 401k Taxable')

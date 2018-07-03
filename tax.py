@@ -11,6 +11,8 @@ def federalIncomeTax(taxable_income, tax_bracket):
 			break
 	return tax_burden
 
+# TODO this needs to be merged with federal tax
+# according to https://quarryhilladvisors.com/blog/can-capital-gains-push-me-into-a-higher-tax-bracket
 def capitalGainsTax(year, taxable_income, short_term_gains, 
 	long_term_gains, capital_gains_tax_bracket):
 	short_term_burden = 0
