@@ -36,7 +36,7 @@ def calculateTakeHome(work_income, deduction_insurances, contribution_401k, \
 
 print('Year Age ', end='')
 if print_level == 'debug':
-	print('WorkIncome Taxable TotalTax TakeHome LivingExp Saveable TaxableCont 401kAT', end='')
+	print('WorkIncome Taxable CGTax TotalTax TakeHome LvngExp Saveable TxblCont 401kAT', end='')
 # elif print_level == 'intermediates':
 # 	print('not implemented yet')
 print(' Savings Roth HSA 401k Taxable')
@@ -58,8 +58,7 @@ for year in range(start_year, end_year):
 	if age < fire_age:
 		# Income from working, adjusted for inflation
 		work_income = inflation(initial_value_work_income, year)
-		# returns from investments
-		#
+		capital_gains = account_retirement_taxable * growth_rate_retirement_taxable
 
 		# Pre-tax contributions
 		account_retirement_401k = account_retirement_401k + contribution_401k # add inflation
@@ -67,12 +66,16 @@ for year in range(start_year, end_year):
 
 		# Taxes
 		taxable_income = calculateTaxableIncome(age, work_income, year)
+		adjusted_gross_income = taxable_income + capital_gains
 		fica_tax = tax.ficaTax(work_income, year)
 		federal_income_tax = tax.federalIncomeTax(taxable_income, tax_bracket_2018)
+		# assuming that all my capital gains are long term gains
+		#capital_gains_tax = tax.capitalGainsTax(year, taxable_income, 0, capital_gains, 
+			#capital_gains_tax_bracket_2018)[1]
 		state_income_tax = tax.stateIncomeTax(work_income)
 		local_income_tax = tax.localIncomeTax(work_income)
-		total_tax = fica_tax + federal_income_tax + state_income_tax + local_income_tax
-		
+		total_tax = fica_tax + federal_income_tax + capital_gains_tax + state_income_tax + local_income_tax
+
 		# Now I get paid
 		take_home = calculateTakeHome(work_income, deduction_insurances, \
 			contribution_401k, contribution_hsa, total_tax)
@@ -95,17 +98,16 @@ for year in range(start_year, end_year):
 
 
 
-	# post-work regime
+	# post-work regime TODO
 	else:
 		work_income = 0
 		# Retirement account distributions are not subject to the FICA tax - https://finance.zacks.com/ira-withdrawals-subject-fica-5179.html
 
-
-	# TODO make this less repetitive because they are subsets
+	# TODO make this use k notation
 	print("%5d %5d" % (year, age), end='')
 	if print_level == 'debug':
-		print("%8.f %8.f %8.f %8.f %8.f %8.f %8.f %8.f" % 
-			(work_income, taxable_income, total_tax, 
+		print("%8.f %8.f %8.f %8.f %8.f %8.f %8.f %8.f %8.f" % 
+			(work_income, taxable_income, capital_gains, total_tax, 
 				take_home, living_expenses, saveable, current_contribution_taxable, remainder), end='')
 	# elif print_level == 'intermediates':
 	# 	print('not implemented yet')
