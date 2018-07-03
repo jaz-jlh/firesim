@@ -11,10 +11,23 @@ def federalIncomeTax(taxable_income, tax_bracket):
 			break
 	return tax_burden
 
+def capitalGainsTax(year, taxable_income, short_term_gains, 
+	long_term_gains, capital_gains_tax_bracket):
+	short_term_burden = 0
+	long_term_burden = 0
+	# TODO currently ignoring the net investment income tax (applies to income over 200k for single)
+	total_income = taxable_income + short_term_gains + long_term_gains
+	# this for loop is reversed so that we only have to compare 1 income value
+	for tax_bracket in reversed(capital_gains_tax_bracket):
+		if total_income > tax_bracket[0]:
+			short_term_burden = short_term_gains * tax_bracket[1]
+			long_term_burden = long_term_gains * tax_bracket[2]
+			return short_term_burden, long_term_burden
+
 def ficaTax(total_income, year):
 	# for now we'll just say the fica tax is a flat 7.65% because that's typically the case
 	return total_income * 0.0765 
-
+	#TODO implement this properly
 	# fica does not apply to HSA contributions - https://www.investopedia.com/articles/personal-finance/091615/how-use-your-hsa-retirement.asp
 	# 
 	# Social Security tax responsibility: 6.2% each for you and employer up to $127,200 in wages.
@@ -28,5 +41,5 @@ def stateIncomeTax(total_income):
 def localIncomeTax(total_income):
 	return total_income * tax_rate_local
 
-def effectiveTaxRate(taxable_income, tax_burden):
-	return (tax_burden / taxable_income) * 100.0
+def effectiveTaxRate(total_income, tax_burden):
+	return (tax_burden / total_income) * 100.0
